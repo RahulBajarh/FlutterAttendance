@@ -102,7 +102,7 @@ class _TimeOutState extends State<TimeOut> {
                           'Rahul! Your Out Time Updated Successfully',
                           true);
                     } else {
-                      showSnackbar(context, 'Already submitted entry!', false);
+                      showSnackbar(context, 'Already submitted entry!!', false);
                     }
                   }
                 },
