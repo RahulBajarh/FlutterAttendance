@@ -1,5 +1,6 @@
 import 'package:contata_attendance/utils/common.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CrossOverDay extends StatefulWidget {
   final Function(bool, String) onSubmit;
@@ -12,10 +13,10 @@ class CrossOverDay extends StatefulWidget {
 
 class _CrossOverDayState extends State<CrossOverDay> {
   final formKey = GlobalKey<FormState>();
-  final TextEditingController _textController = TextEditingController();
   bool isTimeEntryDone = false;
-  String userKey = '';
+  final String userKey = 'RB1507';
   String message = "";
+  bool isButtonEnabled = true;
 
   void showSnackbar(BuildContext context, String newMessage, bool isSuccess) {
     setState(() {
@@ -37,18 +38,15 @@ class _CrossOverDayState extends State<CrossOverDay> {
     );
   }
 
+  Future<void> saveTimeEntry(String username) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('crossoverday', true);
+  }
+
   @override
   void dispose() {
     // Dispose of the TextEditingController when the widget is removed
-    _textController.dispose();
     super.dispose();
-  }
-
-  void clearTextField() {
-    setState(() {
-      _textController.clear(); // Clear the text field
-      userKey = ""; // Reset the text value
-    });
   }
 
   @override
@@ -92,7 +90,8 @@ class _CrossOverDayState extends State<CrossOverDay> {
               const SizedBox(height: 10),
               // Add space between header and input field
               TextFormField(
-                controller: _textController,
+                initialValue: userKey,
+                enabled: isButtonEnabled,
                 decoration: const InputDecoration(labelText: 'Enter your key'),
                 validator: (value) {
                   if (value!.isEmpty) {
@@ -108,7 +107,6 @@ class _CrossOverDayState extends State<CrossOverDay> {
                   if (formKey.currentState!.validate()) {
                     formKey.currentState!.save();
                     if (!isTimeEntryDone) {
-                      clearTextField();
                       widget.onSubmit(
                           true, TimeEntryTypeConstraints.crossOverDay);
                       isTimeEntryDone = true;
@@ -117,7 +115,6 @@ class _CrossOverDayState extends State<CrossOverDay> {
                           'Rahul! Your Cross Over Day Updated Successfully',
                           true);
                     } else {
-                      clearTextField();
                       showSnackbar(context, 'Already submitted entry!', false);
                     }
                   }

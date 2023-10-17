@@ -1,5 +1,6 @@
 import 'package:contata_attendance/utils/common.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TimeIn extends StatefulWidget {
   final Function(bool, String) onSubmit;
@@ -12,10 +13,10 @@ class TimeIn extends StatefulWidget {
 
 class _TimeInState extends State<TimeIn> {
   final formKey = GlobalKey<FormState>();
-  final TextEditingController _textController = TextEditingController();
   bool isTimeEntryDone = false;
-  String userKey = '';
+  final String userKey = 'RB1507';
   String message = "";
+  bool isButtonEnabled = true;
 
   void showSnackbar(BuildContext context, String newMessage, bool isSuccess) {
     setState(() {
@@ -40,15 +41,24 @@ class _TimeInState extends State<TimeIn> {
   @override
   void dispose() {
     // Dispose of the TextEditingController when the widget is removed
-    _textController.dispose();
     super.dispose();
   }
 
-  void clearTextField() {
+  Future<void> retrieveTimeEntry() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isAlreadyTimein =
+        prefs.getBool(TimeEntryTypeConstraints.timeIn) ?? false;
     setState(() {
-      _textController.clear(); // Clear the text field
-      userKey = ""; // Reset the text value
+      isButtonEnabled = !isAlreadyTimein;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Call your async function when the page loads
+
+    retrieveTimeEntry();
   }
 
   @override
@@ -79,7 +89,8 @@ class _TimeInState extends State<TimeIn> {
               ),
               const SizedBox(height: 10),
               TextFormField(
-                controller: _textController,
+                initialValue : userKey,
+                enabled: isButtonEnabled,
                 decoration: const InputDecoration(labelText: 'Enter your key'),
                 validator: (value) {
                   if (value!.isEmpty) {
@@ -87,27 +98,29 @@ class _TimeInState extends State<TimeIn> {
                   }
                   return null;
                 },
-                onSaved: (value) {
-                  userKey = value!;
-                },
               ),
               const SizedBox(height: 10),
               ElevatedButton(
-                onPressed: () {
-                  if (formKey.currentState!.validate()) {
-                    formKey.currentState!.save();
-                    if (!isTimeEntryDone) {
-                      clearTextField();
-                      widget.onSubmit(true, TimeEntryTypeConstraints.timeIn);
-                      isTimeEntryDone = true;
-                      showSnackbar(
-                          context, 'Rahul! Welcome to Contata Solutions', true);
-                    } else {
-                      clearTextField();
-                      showSnackbar(context, 'Already submitted entry!', false);
-                    }
-                  }
-                },
+                onPressed: isButtonEnabled
+                    ? () {
+                        if (formKey.currentState!.validate()) {
+                          formKey.currentState!.save();
+                          if (!isTimeEntryDone) {
+                            isButtonEnabled = false;
+                            TimeEntry.saveTimeEntry(
+                                TimeEntryTypeConstraints.timeIn);
+                            widget.onSubmit(
+                                true, TimeEntryTypeConstraints.timeIn);
+                            isTimeEntryDone = true;
+                            showSnackbar(context,
+                                'Rahul! Welcome to Contata Solutions', true);
+                          } else {
+                            showSnackbar(
+                                context, 'Already submitted entry!', false);
+                          }
+                        }
+                      }
+                    : null,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[

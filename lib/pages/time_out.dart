@@ -1,5 +1,6 @@
 import 'package:contata_attendance/utils/common.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TimeOut extends StatefulWidget {
   final Function(bool, String) onSubmit;
@@ -12,10 +13,10 @@ class TimeOut extends StatefulWidget {
 
 class _TimeOutState extends State<TimeOut> {
   final formKey = GlobalKey<FormState>();
-  final TextEditingController _textController = TextEditingController();
   bool isTimeEntryDone = false;
-  String userKey = '';
+  final String userKey = 'RB1507';
   String message = "";
+  bool isButtonEnabled = true;
 
   void showSnackbar(BuildContext context, String newMessage, bool isSuccess) {
     setState(() {
@@ -37,18 +38,15 @@ class _TimeOutState extends State<TimeOut> {
     );
   }
 
+  Future<void> saveTimeEntry(String username) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('timeout', false);
+  }
+
   @override
   void dispose() {
     // Dispose of the TextEditingController when the widget is removed
-    _textController.dispose();
     super.dispose();
-  }
-
-  void clearTextField() {
-    setState(() {
-      _textController.clear(); // Clear the text field
-      userKey = ""; // Reset the text value
-    });
   }
 
   @override
@@ -80,18 +78,16 @@ class _TimeOutState extends State<TimeOut> {
               const SizedBox(height: 10),
               // Add space between header and input field
               TextFormField(
-                controller: _textController,
-                decoration: const InputDecoration(labelText: 'Enter your key'),
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter your key';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  userKey = value!;
-                },
-              ),
+                  initialValue: userKey,
+                  enabled: isButtonEnabled,
+                  decoration:
+                      const InputDecoration(labelText: 'Enter your key'),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter your key';
+                    }
+                    return null;
+                  }),
               const SizedBox(height: 10),
               // Add space between input field and button
               ElevatedButton(
@@ -99,15 +95,13 @@ class _TimeOutState extends State<TimeOut> {
                   if (formKey.currentState!.validate()) {
                     formKey.currentState!.save();
                     if (!isTimeEntryDone) {
-                      clearTextField();
                       widget.onSubmit(true, TimeEntryTypeConstraints.timeOut);
                       isTimeEntryDone = true;
                       showSnackbar(
                           context,
-                          'Rahul! Your Time Out Entry Updated Successfully',
+                          'Rahul! Your Out Time Updated Successfully',
                           true);
                     } else {
-                      clearTextField();
                       showSnackbar(context, 'Already submitted entry!', false);
                     }
                   }
