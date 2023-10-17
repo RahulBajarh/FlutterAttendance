@@ -17,6 +17,7 @@ class _TimeOutState extends State<TimeOut> {
   final String userKey = 'RB1507';
   String message = "";
   bool isButtonEnabled = true;
+  bool isContainerVisible = false;
 
   void showSnackbar(BuildContext context, String newMessage, bool isSuccess) {
     setState(() {
@@ -38,15 +39,28 @@ class _TimeOutState extends State<TimeOut> {
     );
   }
 
-  Future<void> saveTimeEntry(String username) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('timeout', false);
-  }
-
   @override
   void dispose() {
     // Dispose of the TextEditingController when the widget is removed
     super.dispose();
+  }
+
+  Future<void> retrieveTimeEntry() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isAlreadyTimeOut =
+        prefs.getBool(TimeEntryTypeConstraints.timeOut) ?? false;
+    setState(() {
+      isButtonEnabled = !isAlreadyTimeOut;
+      isContainerVisible = isAlreadyTimeOut;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Call your async function when the page loads
+
+    retrieveTimeEntry();
   }
 
   @override
@@ -54,80 +68,114 @@ class _TimeOutState extends State<TimeOut> {
     return Form(
       key: formKey,
       child: Center(
-        child: Container(
-          width: 300,
-          padding: const EdgeInsets.all(16.0),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.indigo, width: 1.0),
-            borderRadius: const BorderRadius.all(Radius.circular(10)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Container(
-                padding: const EdgeInsets.all(8.0),
-                color: Colors.indigo[100],
-                child: Text(
-                  'Time Out',
-                  style: TextStyle(
-                      color: Colors.indigo[900],
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18),
-                ),
+        child: Column(
+          children: [
+            Container(
+              width: 300,
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.indigo, width: 1.0),
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
               ),
-              const SizedBox(height: 10),
-              // Add space between header and input field
-              TextFormField(
-                  initialValue: userKey,
-                  enabled: isButtonEnabled,
-                  decoration:
-                      const InputDecoration(labelText: 'Enter your key'),
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return 'Please enter your key';
-                    }
-                    return null;
-                  }),
-              const SizedBox(height: 10),
-              // Add space between input field and button
-              ElevatedButton(
-                onPressed: () {
-                  if (formKey.currentState!.validate()) {
-                    formKey.currentState!.save();
-                    if (!isTimeEntryDone) {
-                      widget.onSubmit(true, TimeEntryTypeConstraints.timeOut);
-                      isTimeEntryDone = true;
-                      showSnackbar(
-                          context,
-                          'Rahul! Your Out Time Updated Successfully',
-                          true);
-                    } else {
-                      showSnackbar(context, 'Already submitted entry!!', false);
-                    }
-                  }
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    const Icon(
-                      Icons.timer,
-                      color: Colors.indigo,
-                    ),
-                    // Icon
-                    const SizedBox(width: 8),
-                    // Add space between the icon and text
-                    Text(
-                      'Submit',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Container(
+                    padding: const EdgeInsets.all(8.0),
+                    color: Colors.indigo[100],
+                    child: Text(
+                      'Time Out',
                       style: TextStyle(
-                        color: Colors.indigo[900], // Change the text color here
-                      ),
+                          color: Colors.indigo[900],
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18),
                     ),
-                    // Text
-                  ],
+                  ),
+                  const SizedBox(height: 10),
+                  // Add space between header and input field
+                  TextFormField(
+                      initialValue: userKey,
+                      enabled: isButtonEnabled,
+                      decoration:
+                          const InputDecoration(labelText: 'Enter your key'),
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Please enter your key';
+                        }
+                        return null;
+                      }),
+                  const SizedBox(height: 10),
+                  // Add space between input field and button
+                  ElevatedButton(
+                    onPressed: isButtonEnabled
+                        ? () {
+                            if (formKey.currentState!.validate()) {
+                              formKey.currentState!.save();
+                              if (!isTimeEntryDone) {
+                                isButtonEnabled = false;
+                                TimeEntry.saveTimeEntry(
+                                    TimeEntryTypeConstraints.timeOut);
+                                widget.onSubmit(
+                                    true, TimeEntryTypeConstraints.timeOut);
+                                isTimeEntryDone = true;
+                                showSnackbar(
+                                    context,
+                                    'Rahul! Your Out Time Updated Successfully',
+                                    true);
+                              } else {
+                                showSnackbar(context,
+                                    'Already submitted entry!!', false);
+                              }
+                            }
+                          }
+                        : null,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        const Icon(
+                          Icons.timer,
+                          color: Colors.indigo,
+                        ),
+                        // Icon
+                        const SizedBox(width: 8),
+                        // Add space between the icon and text
+                        Text(
+                          'Submit',
+                          style: TextStyle(
+                            color: Colors
+                                .indigo[900], // Change the text color here
+                          ),
+                        ),
+                        // Text
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Visibility(
+              visible: isContainerVisible,
+              child: Container(
+                width: 300, // Set the width as needed
+                height: 50, // Set the height as needed
+                decoration: const BoxDecoration(
+                  color: Colors.blue, // Container background color
+                  borderRadius: BorderRadius.all(
+                      Radius.circular(10)), // Set the border radius
+                ),
+                child: const Center(
+                  child: Text(
+                    'Hello, this is a message!',
+                    style: TextStyle(
+                      color: Colors.white, // Text color
+                      fontSize: 18,
+                    ),
+                  ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

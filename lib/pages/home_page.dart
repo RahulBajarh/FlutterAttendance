@@ -45,6 +45,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isTimeOut = false;
   bool isCrossOverDay = false;
   String entryTimeType = "";
+
   //Color _backgroundColor = Colors.red;
 
   void toggleDrawerContent(String newValue) {
@@ -77,8 +78,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void isSuccess(bool newValue, String timeType) {
-    print(newValue);
-    print(timeType);
     if (timeType == TimeEntryTypeConstraints.timeIn) {
       setState(() {
         isCrossOverDay = false;

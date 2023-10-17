@@ -16,4 +16,11 @@ class TimeEntry{
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(entryType, true);
   }
+
+  Future<bool> retrieveTimeEntry(String entryType) async {
+    final prefs = await SharedPreferences.getInstance();
+    final value =
+        prefs.getBool(entryType) ?? false;
+    return value;
+  }
 }
