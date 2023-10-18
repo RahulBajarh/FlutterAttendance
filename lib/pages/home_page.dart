@@ -59,6 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
           isTimeIn = true;
           isTimeOut = false;
           isTimeEntryHistory = false;
+          _selectedIndex = 0;
         });
       }
     } else if (entryTimeType == TimeEntryTypeConstraints.timeOut) {
@@ -68,6 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
           isTimeIn = false;
           isTimeOut = true;
           isTimeEntryHistory = false;
+          _selectedIndex = 1;
         });
       }
     } else if (entryTimeType == TimeEntryTypeConstraints.crossOverDay) {
@@ -77,6 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
           isTimeIn = false;
           isTimeOut = false;
           isTimeEntryHistory = false;
+          _selectedIndex = 2;
         });
       }
     } else if (entryTimeType == TimeEntryTypeConstraints.entryHistory) {

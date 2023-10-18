@@ -82,7 +82,7 @@ class MyDrawer extends StatelessWidget {
                 size: 32,
               ),
               title: const Text(
-                'Last 7 days Attendance',
+                'Attendance History',
                 textScaleFactor: 1.2,
                 style: TextStyle(color: Colors.white),
               ),

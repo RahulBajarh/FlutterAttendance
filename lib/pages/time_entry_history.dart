@@ -11,7 +11,11 @@ class TimeEntryHistory extends StatefulWidget {
 class _TimeEntryHistoryState extends State<TimeEntryHistory> {
 // Retrieve user data
   String? user = '';
-
+  final TextStyle myTableHeaderTextStyle = const TextStyle(
+    color: Colors.black,
+    fontSize: 14,
+    fontWeight: FontWeight.bold,
+  );
   Future<void> retrieveCredentials() async {
     final prefs = await SharedPreferences.getInstance();
     final savedUsername = prefs.getString('username') ?? '';
@@ -33,9 +37,39 @@ class _TimeEntryHistoryState extends State<TimeEntryHistory> {
 
     return Column(
       children: [
-        Text(
-          'In/Out time details of: $user',
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w400),
+        Column(
+          children: [
+            Container(
+              width: 300, // Set the width as needed
+              height: 70, // Set the height as needed
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.3),
+                // Container background color
+                borderRadius: const BorderRadius.all(
+                    Radius.circular(10)), // Set the border radius
+              ),
+              child: const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      Text(
+                        'In/Out time details of: ',
+                        style: TextStyle(color: Colors.black, fontSize: 18),
+                      ),
+                      Text(
+                        'Rahul Bazad',
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(
           height: 30,
@@ -43,14 +77,18 @@ class _TimeEntryHistoryState extends State<TimeEntryHistory> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: DataTable(
-            border: TableBorder.all(width: 1),
+            border: TableBorder.all(width: 2),
             columnSpacing: 36,
             horizontalMargin: 13,
-            columns: const [
-              DataColumn(label: Text('Date')),
-              DataColumn(label: Text('In Time')),
-              DataColumn(label: Text('Out Time')),
-              DataColumn(label: Text('Total hrs'))
+            // Adjust the height of data rows as needed
+            headingRowColor: MaterialStateProperty.resolveWith<Color>((states) {
+              return Colors.grey.withOpacity(0.6); // Set the header background color
+            }),
+            columns: [
+              DataColumn(label: Text('Date',style: myTableHeaderTextStyle,)),
+              DataColumn(label: Text('In Time',style: myTableHeaderTextStyle,)),
+              DataColumn(label: Text('Out Time',style: myTableHeaderTextStyle,)),
+              DataColumn(label: Text('Total hrs',style: myTableHeaderTextStyle,))
             ],
             rows: const [
               DataRow(cells: [
