@@ -17,11 +17,6 @@ class MyAppState extends ChangeNotifier {
   var currentTime = "";
   bool isTimeIn = false;
 
-  void getNext() {
-    current = WordPair.random();
-    notifyListeners();
-  }
-
   void setTimeInEntry() {
     isTimeIn = true;
     notifyListeners();
@@ -155,6 +150,26 @@ class _MyHomePageState extends State<MyHomePage> {
     TimeEntry.saveUserDetails(false);
   }
 
+  Future<void> clearStoredDateTomorrow() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    DateTime currentDate = DateTime.now();
+    DateTime nextDay = currentDate.add(const Duration(days: 1));
+
+    // Calculate the time until the next day arrives
+    Duration timeUntilNextDay = nextDay.difference(currentDate);
+
+    Timer(timeUntilNextDay, () {
+      // Clear the stored date when the next day arrives
+      prefs.remove(TimeEntryTypeConstraints.timeIn);
+      prefs.remove(TimeEntryTypeConstraints.entryTimeIn);
+      prefs.remove(TimeEntryTypeConstraints.entryTimeInDate);
+      prefs.remove(TimeEntryTypeConstraints.timeOut);
+      prefs.remove(TimeEntryTypeConstraints.entryTimeOut);
+      prefs.remove(TimeEntryTypeConstraints.entryTimeOutDate);
+      prefs.remove(TimeEntryTypeConstraints.crossOverDay);
+    });
+  }
+
 // Retrieve user data
   Future<void> retrieveCredentials() async {
     final prefs = await SharedPreferences.getInstance();
@@ -172,7 +187,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _logOut() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.clear();
+    prefs.remove(LoginKeys.username);
+    prefs.remove(LoginKeys.keylogin);
     if (!mounted) return;
     Navigator.pushReplacement(
         context,
@@ -196,6 +212,7 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     });
     super.initState();
+    clearStoredDateTomorrow();
     // Call your async function when the page loads
     userDetails();
     retrieveCredentials();
@@ -229,7 +246,8 @@ class _MyHomePageState extends State<MyHomePage> {
         drawer: MyDrawer(
           toggleDrawerContent: toggleDrawerContent,
         ),
-        body: SingleChildScrollView(
+        body: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
           child: Column(children: [
             Container(
               height: 50,
@@ -319,29 +337,42 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             const SizedBox(height: 40),
-            Column(
-              children: [
-                if (!isTimeEntryHistory) ...[
-                  if (!isCrossOverDay) ...[
-                    if (isTimeIn) ...[
-                      TimeIn(
-                        onSubmit: isSuccess,
-                      ),
-                    ] else ...[
-                      TimeOut(
-                        onSubmit: isSuccess,
-                      ),
-                    ],
-                  ] else ...[
-                    CrossOverDay(
-                      onSubmit: isSuccess,
-                    ),
-                  ],
-                ] else ...[
-                  const TimeEntryHistory(),
-                ]
-              ],
-            ),
+
+            Visibility(
+              visible: isTimeEntryHistory,
+              child: Container(
+                key: ValueKey<int>(0),
+                child: const TimeEntryHistory(),
+              ),
+            ), //Time History
+            Visibility(
+              visible: isCrossOverDay,
+              child: Container(
+                key: ValueKey<int>(1),
+                child: CrossOverDay(
+                  onSubmit: isSuccess,
+                ),
+              ),
+            ), //Cross Over Day
+            Visibility(
+              visible: isTimeIn,
+              child: Container(
+                key: ValueKey<int>(2),
+                child: TimeIn(
+                  onSubmit: isSuccess,
+                ),
+              ),
+            ), //Time in
+            Visibility(
+              visible: isTimeOut,
+              child: Container(
+                key: ValueKey<int>(3),
+                child: TimeOut(
+                  onSubmit: isSuccess,
+                ),
+              ),
+            ), //Time out
+
             const SizedBox(height: 10),
           ]),
         ),

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:contata_attendance/utils/common.dart';
 import 'package:flutter/material.dart';
 import 'package:contata_attendance/pages/home_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,7 +15,6 @@ class SplashScreen extends StatefulWidget {
 }
 
 class SplashScreenState extends State<SplashScreen> {
-  static const keylogin = "isLogin";
 
   @override
   void initState() {
@@ -37,7 +37,7 @@ class SplashScreenState extends State<SplashScreen> {
   void whereToGo() async {
     // Retrieve user data
     final prefs = await SharedPreferences.getInstance();
-    final isLoggedin = prefs.getBool(keylogin) ?? false;
+    final isLoggedin = prefs.getBool(LoginKeys.keylogin) ?? false;
 
     Timer(
       const Duration(seconds: 2),

@@ -1,8 +1,9 @@
 import 'dart:async';
 
+import 'package:contata_attendance/utils/common.dart';
 import 'package:flutter/material.dart';
-import 'package:contata_attendance/pages/splash_screen.dart';
 import 'package:contata_attendance/utils/routes.dart';
+import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
@@ -18,18 +19,55 @@ class _LoginPageState extends State<LoginPage> {
   String password = '';
   bool isLoggedIn = false;
 
+  // void login() {
+  //   isLoggedIn = true;
+  //   if (isLoggedIn) {
+  //     Navigator.pushNamed(context, MyRoutes.homeRoute);
+  //   }
+  // }
+
   Future<void> saveCredentials(String username) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('username', username);
-    await prefs.setBool(SplashScreenState.keylogin, true);
+    await prefs.setString(LoginKeys.username, username);
+    await prefs.setBool(LoginKeys.keylogin, true);
   }
 
-  void handleLogin() {
-    isLoggedIn = true; // Replace this with your actual authentication check.
+  Future<void> handleLogin(String username, String password) async {
+    try {
+      Response response = await get(
+        Uri.parse('https://jsonplaceholder.typicode.com/users?username=$username'),
+      );
+      if (response.statusCode == 200) {
+        //final doc = response.body.toString();
+        //final userJSON = jsonDecode(doc);
+        saveCredentials(username);
+        //var userEmail = userJSON[0]['email'];
 
-    if (isLoggedIn) {
-      Navigator.pushNamed(context, MyRoutes.homeRoute);
+        if (!context.mounted) {
+          return;
+        }
+        Navigator.pushNamed(context, MyRoutes.homeRoute);
+      }
+    } catch (e) {
+      showSnackbar();
     }
+  }
+
+  void showSnackbar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Authentication failed. Please try again.',
+          style: TextStyle(
+            color: Colors.white, // Change text color
+            fontSize: 18, // Change text size
+          ),
+        ),
+        duration: Duration(seconds: 2),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   @override
@@ -54,17 +92,16 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               Center(
                 child: InkWell(
-                  onTap: () {
-                  },
+                  onTap: () {},
                   child: Image.asset("assets/images/login.png",
                       height: 250, width: 250, fit: BoxFit.cover),
                 ),
               ),
               const SizedBox(height: 10),
-              Center(
+              const Center(
                 child: Text(
-                  "Welcome $username",
-                  style: const TextStyle(
+                  "Welcome",
+                  style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
                   ),
@@ -81,8 +118,7 @@ class _LoginPageState extends State<LoginPage> {
                         hintText: "Enter UserName",
                         labelText: "UserName",
                       ),
-                      onChanged: (value) {
-                      },
+                      onChanged: (value) {},
                       validator: (value) {
                         if (value!.isEmpty) {
                           return 'Username is required!';
@@ -116,8 +152,7 @@ class _LoginPageState extends State<LoginPage> {
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
                           _formKey.currentState!.save();
-                          saveCredentials(username);
-                          handleLogin();
+                          handleLogin(username, password);
                         }
                       },
                       style: ElevatedButton.styleFrom(

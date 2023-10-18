@@ -129,7 +129,9 @@ class _TimeOutState extends State<TimeOut> {
                               if (!isTimeEntryDone) {
                                 isButtonEnabled = false;
                                 TimeEntry.saveTimeEntry(
-                                    TimeEntryTypeConstraints.timeOut,TimeEntryTypeConstraints.entryTimeOut);
+                                    TimeEntryTypeConstraints.timeOut,
+                                    TimeEntryTypeConstraints.entryTimeOut,
+                                    TimeEntryTypeConstraints.entryTimeOutDate);
                                 widget.onSubmit(
                                     true, TimeEntryTypeConstraints.timeOut);
                                 isTimeEntryDone = true;
@@ -182,7 +184,8 @@ class _TimeOutState extends State<TimeOut> {
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text(informationText,
+                    child: Text(
+                      informationText,
                       style: const TextStyle(
                         color: Colors.white, // Text color
                         fontSize: 18,

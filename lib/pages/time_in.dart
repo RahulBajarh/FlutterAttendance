@@ -129,7 +129,8 @@ class _TimeInState extends State<TimeIn> {
                                 isButtonEnabled = false;
                                 TimeEntry.saveTimeEntry(
                                     TimeEntryTypeConstraints.timeIn,
-                                    TimeEntryTypeConstraints.entryTimeIn);
+                                    TimeEntryTypeConstraints.entryTimeIn,
+                                    TimeEntryTypeConstraints.entryTimeInDate);
                                 widget.onSubmit(
                                     true, TimeEntryTypeConstraints.timeIn);
                                 isTimeEntryDone = true;
