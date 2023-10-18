@@ -16,6 +16,7 @@ class _TimeInState extends State<TimeIn> {
   bool isTimeEntryDone = false;
   final String userKey = 'RB1507';
   String message = "";
+  String entryTimeIn = "";
   bool isButtonEnabled = true;
   bool isContainerVisible = false;
 
@@ -49,9 +50,12 @@ class _TimeInState extends State<TimeIn> {
     final prefs = await SharedPreferences.getInstance();
     final isAlreadyTimein =
         prefs.getBool(TimeEntryTypeConstraints.timeIn) ?? false;
+    final entryTime =
+        prefs.getString(TimeEntryTypeConstraints.entryTimeIn) ?? "";
     setState(() {
       isButtonEnabled = !isAlreadyTimein;
       isContainerVisible = isAlreadyTimein;
+      entryTimeIn = entryTime;
     });
   }
 
@@ -113,7 +117,7 @@ class _TimeInState extends State<TimeIn> {
                               if (!isTimeEntryDone) {
                                 isButtonEnabled = false;
                                 TimeEntry.saveTimeEntry(
-                                    TimeEntryTypeConstraints.timeIn);
+                                    TimeEntryTypeConstraints.timeIn,TimeEntryTypeConstraints.entryTimeIn);
                                 widget.onSubmit(
                                     true, TimeEntryTypeConstraints.timeIn);
                                 isTimeEntryDone = true;
@@ -163,10 +167,10 @@ class _TimeInState extends State<TimeIn> {
                   borderRadius: BorderRadius.all(
                       Radius.circular(10)), // Set the border radius
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
-                    'Hello, this is a message!',
-                    style: TextStyle(
+                    'Your submitted time is: $entryTimeIn',
+                    style: const TextStyle(
                       color: Colors.white, // Text color
                       fontSize: 18,
                     ),

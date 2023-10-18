@@ -16,6 +16,7 @@ class _TimeOutState extends State<TimeOut> {
   bool isTimeEntryDone = false;
   final String userKey = 'RB1507';
   String message = "";
+  String entryTimeOut = "";
   bool isButtonEnabled = true;
   bool isContainerVisible = false;
 
@@ -49,9 +50,12 @@ class _TimeOutState extends State<TimeOut> {
     final prefs = await SharedPreferences.getInstance();
     final isAlreadyTimeOut =
         prefs.getBool(TimeEntryTypeConstraints.timeOut) ?? false;
+    final entryTime =
+        prefs.getString(TimeEntryTypeConstraints.entryTimeOut) ?? "";
     setState(() {
       isButtonEnabled = !isAlreadyTimeOut;
       isContainerVisible = isAlreadyTimeOut;
+      entryTimeOut = entryTime;
     });
   }
 
@@ -114,7 +118,7 @@ class _TimeOutState extends State<TimeOut> {
                               if (!isTimeEntryDone) {
                                 isButtonEnabled = false;
                                 TimeEntry.saveTimeEntry(
-                                    TimeEntryTypeConstraints.timeOut);
+                                    TimeEntryTypeConstraints.timeOut,TimeEntryTypeConstraints.entryTimeOut);
                                 widget.onSubmit(
                                     true, TimeEntryTypeConstraints.timeOut);
                                 isTimeEntryDone = true;
@@ -164,10 +168,10 @@ class _TimeOutState extends State<TimeOut> {
                   borderRadius: BorderRadius.all(
                       Radius.circular(10)), // Set the border radius
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
-                    'Hello, this is a message!',
-                    style: TextStyle(
+                    'Your submitted time is: $entryTimeOut',
+                    style: const TextStyle(
                       color: Colors.white, // Text color
                       fontSize: 18,
                     ),
