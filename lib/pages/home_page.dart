@@ -189,6 +189,7 @@ class _MyHomePageState extends State<MyHomePage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.remove(LoginKeys.username);
     prefs.remove(LoginKeys.keylogin);
+    prefs.clear();
     if (!mounted) return;
     Navigator.pushReplacement(
         context,

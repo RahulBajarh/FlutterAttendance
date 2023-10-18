@@ -109,7 +109,13 @@ class _CrossOverDayState extends State<CrossOverDay> {
               // Add space between header and input field
               TextFormField(
                 initialValue: userKey,
-                enabled: isButtonEnabled,
+                enabled: false,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900 // Set the font size
+                    // You can set other text-related properties here
+                    ),
                 decoration: const InputDecoration(labelText: 'Enter your key'),
                 validator: (value) {
                   if (value!.isEmpty) {
@@ -149,9 +155,7 @@ class _CrossOverDayState extends State<CrossOverDay> {
                     // Add space between the icon and text
                     Text(
                       'COD Submit',
-                      style: TextStyle(
-                        color: Colors.indigo[900], // Change the text color here
-                      ),
+                      style: TextStyle(color: Colors.indigo[900], fontSize: 16),
                     ),
                     // Text
                   ],

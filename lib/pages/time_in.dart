@@ -109,7 +109,13 @@ class _TimeInState extends State<TimeIn> {
                   const SizedBox(height: 10),
                   TextFormField(
                     initialValue: userKey,
-                    enabled: isButtonEnabled,
+                    enabled: false,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900 // Set the font size
+                        // You can set other text-related properties here
+                        ),
                     decoration:
                         const InputDecoration(labelText: 'Enter your key'),
                     validator: (value) {
@@ -158,9 +164,7 @@ class _TimeInState extends State<TimeIn> {
                         Text(
                           'Submit',
                           style: TextStyle(
-                            color: Colors
-                                .indigo[900], // Change the text color here
-                          ),
+                              color: Colors.indigo[900], fontSize: 16),
                         ),
                         // Text
                       ],

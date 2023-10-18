@@ -110,7 +110,13 @@ class _TimeOutState extends State<TimeOut> {
                   // Add space between header and input field
                   TextFormField(
                       initialValue: userKey,
-                      enabled: isButtonEnabled,
+                      enabled: false,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900 // Set the font size
+                          // You can set other text-related properties here
+                          ),
                       decoration:
                           const InputDecoration(labelText: 'Enter your key'),
                       validator: (value) {
@@ -159,9 +165,7 @@ class _TimeOutState extends State<TimeOut> {
                         Text(
                           'Submit',
                           style: TextStyle(
-                            color: Colors
-                                .indigo[900], // Change the text color here
-                          ),
+                              color: Colors.indigo[900], fontSize: 16),
                         ),
                         // Text
                       ],
