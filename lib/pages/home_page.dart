@@ -179,6 +179,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   void initState() {
     Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
