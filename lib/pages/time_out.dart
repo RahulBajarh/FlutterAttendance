@@ -16,9 +16,11 @@ class _TimeOutState extends State<TimeOut> {
   bool isTimeEntryDone = false;
   final String userKey = 'RB1507';
   String message = "";
+  String informationText = "";
   String entryTimeOut = "";
   bool isButtonEnabled = true;
   bool isContainerVisible = false;
+  bool isCrossOverDay = false;
 
   void showSnackbar(BuildContext context, String newMessage, bool isSuccess) {
     setState(() {
@@ -33,7 +35,7 @@ class _TimeOutState extends State<TimeOut> {
             fontSize: 18, // Change text size
           ),
         ),
-        duration: const Duration(seconds: 3),
+        duration: const Duration(seconds: 2),
         backgroundColor: isSuccess ? Colors.green : Colors.red,
         behavior: SnackBarBehavior.floating,
       ),
@@ -52,10 +54,19 @@ class _TimeOutState extends State<TimeOut> {
         prefs.getBool(TimeEntryTypeConstraints.timeOut) ?? false;
     final entryTime =
         prefs.getString(TimeEntryTypeConstraints.entryTimeOut) ?? "";
+    final isCrossOver =
+        prefs.getBool(TimeEntryTypeConstraints.crossOverDay) ?? false;
     setState(() {
       isButtonEnabled = !isAlreadyTimeOut;
       isContainerVisible = isAlreadyTimeOut;
       entryTimeOut = entryTime;
+      informationText = "Your submitted time is: $entryTimeOut";
+      isCrossOverDay = isCrossOver;
+      if (isCrossOverDay) {
+        isButtonEnabled = false;
+        isContainerVisible = true;
+        informationText = "Please submit your cross over day entry first!";
+      }
     });
   }
 
@@ -162,18 +173,20 @@ class _TimeOutState extends State<TimeOut> {
               visible: isContainerVisible,
               child: Container(
                 width: 300, // Set the width as needed
-                height: 50, // Set the height as needed
+                height: 70, // Set the height as needed
                 decoration: const BoxDecoration(
                   color: Colors.blue, // Container background color
                   borderRadius: BorderRadius.all(
                       Radius.circular(10)), // Set the border radius
                 ),
                 child: Center(
-                  child: Text(
-                    'Your submitted time is: $entryTimeOut',
-                    style: const TextStyle(
-                      color: Colors.white, // Text color
-                      fontSize: 18,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(informationText,
+                      style: const TextStyle(
+                        color: Colors.white, // Text color
+                        fontSize: 18,
+                      ),
                     ),
                   ),
                 ),

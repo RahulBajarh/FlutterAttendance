@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:contata_attendance/pages/cross_over_day.dart';
 import 'package:contata_attendance/pages/login.dart';
+import 'package:contata_attendance/pages/time_entry_history.dart';
 import 'package:contata_attendance/pages/time_in.dart';
 import 'package:contata_attendance/pages/time_out.dart';
 import 'package:contata_attendance/utils/common.dart';
@@ -44,6 +45,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isTimeIn = true;
   bool isTimeOut = false;
   bool isCrossOverDay = false;
+  bool isTimeEntryHistory = false;
   String entryTimeType = "";
 
   //Color _backgroundColor = Colors.red;
@@ -56,6 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
           isCrossOverDay = false;
           isTimeIn = true;
           isTimeOut = false;
+          isTimeEntryHistory = false;
         });
       }
     } else if (entryTimeType == TimeEntryTypeConstraints.timeOut) {
@@ -64,6 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
           isCrossOverDay = false;
           isTimeIn = false;
           isTimeOut = true;
+          isTimeEntryHistory = false;
         });
       }
     } else if (entryTimeType == TimeEntryTypeConstraints.crossOverDay) {
@@ -72,6 +76,16 @@ class _MyHomePageState extends State<MyHomePage> {
           isCrossOverDay = true;
           isTimeIn = false;
           isTimeOut = false;
+          isTimeEntryHistory = false;
+        });
+      }
+    } else if (entryTimeType == TimeEntryTypeConstraints.entryHistory) {
+      if (mounted) {
+        setState(() {
+          isCrossOverDay = false;
+          isTimeIn = false;
+          isTimeOut = false;
+          isTimeEntryHistory = true;
         });
       }
     }
@@ -83,18 +97,21 @@ class _MyHomePageState extends State<MyHomePage> {
         isCrossOverDay = false;
         isTimeIn = newValue;
         isTimeOut = false;
+        isTimeEntryHistory = false;
       });
     } else if (timeType == TimeEntryTypeConstraints.timeOut) {
       setState(() {
         isCrossOverDay = false;
         isTimeIn = false;
         isTimeOut = newValue;
+        isTimeEntryHistory = false;
       });
     } else if (timeType == TimeEntryTypeConstraints.crossOverDay) {
       setState(() {
         isCrossOverDay = newValue;
         isTimeIn = false;
         isTimeOut = false;
+        isTimeEntryHistory = false;
       });
     }
   }
@@ -107,6 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
           isCrossOverDay = false;
           isTimeIn = true;
           isTimeOut = false;
+          isTimeEntryHistory = false;
         });
       }
     } else if (index == 1) {
@@ -115,6 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
           isCrossOverDay = false;
           isTimeIn = false;
           isTimeOut = true;
+          isTimeEntryHistory = false;
         });
       }
     } else if (index == 2) {
@@ -123,17 +142,28 @@ class _MyHomePageState extends State<MyHomePage> {
           isCrossOverDay = true;
           isTimeIn = false;
           isTimeOut = false;
+          isTimeEntryHistory = false;
         });
       }
     }
+  }
+
+  void userDetails() {
+    TimeEntry.saveUserDetails(false);
   }
 
 // Retrieve user data
   Future<void> retrieveCredentials() async {
     final prefs = await SharedPreferences.getInstance();
     final savedUsername = prefs.getString('username') ?? '';
+    final isCrossOver =
+        prefs.getBool(TimeEntryTypeConstraints.crossOverDay) ?? false;
     setState(() {
       user = savedUsername;
+      isCrossOverDay = isCrossOver;
+      if (isCrossOverDay) {
+        _selectedIndex = 2;
+      }
     });
   }
 
@@ -159,6 +189,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     super.initState();
     // Call your async function when the page loads
+    userDetails();
     retrieveCredentials();
   }
 
@@ -282,24 +313,28 @@ class _MyHomePageState extends State<MyHomePage> {
             const SizedBox(height: 40),
             Column(
               children: [
-                if (!isCrossOverDay) ...[
-                  if (isTimeIn) ...[
-                    TimeIn(
-                      onSubmit: isSuccess,
-                    ),
+                if (!isTimeEntryHistory) ...[
+                  if (!isCrossOverDay) ...[
+                    if (isTimeIn) ...[
+                      TimeIn(
+                        onSubmit: isSuccess,
+                      ),
+                    ] else ...[
+                      TimeOut(
+                        onSubmit: isSuccess,
+                      ),
+                    ],
                   ] else ...[
-                    TimeOut(
+                    CrossOverDay(
                       onSubmit: isSuccess,
                     ),
                   ],
                 ] else ...[
-                  CrossOverDay(
-                    onSubmit: isSuccess,
-                  ),
-                ],
+                  const TimeEntryHistory(),
+                ]
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
           ]),
         ),
         bottomNavigationBar: SizedBox(

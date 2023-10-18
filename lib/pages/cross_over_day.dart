@@ -16,7 +16,8 @@ class _CrossOverDayState extends State<CrossOverDay> {
   bool isTimeEntryDone = false;
   final String userKey = 'RB1507';
   String message = "";
-  bool isButtonEnabled = true;
+  bool isButtonEnabled = false;
+  bool isContainerVisible = false;
 
   void showSnackbar(BuildContext context, String newMessage, bool isSuccess) {
     setState(() {
@@ -31,7 +32,7 @@ class _CrossOverDayState extends State<CrossOverDay> {
             fontSize: 18, // Change text size
           ),
         ),
-        duration: const Duration(seconds: 3),
+        duration: const Duration(seconds: 2),
         backgroundColor: isSuccess ? Colors.green : Colors.red,
         behavior: SnackBarBehavior.floating,
       ),
@@ -47,6 +48,23 @@ class _CrossOverDayState extends State<CrossOverDay> {
   void dispose() {
     // Dispose of the TextEditingController when the widget is removed
     super.dispose();
+  }
+
+  Future<void> retrieveTimeEntry() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isCrossOver =
+        prefs.getBool(TimeEntryTypeConstraints.crossOverDay) ?? false;
+    setState(() {
+      isButtonEnabled = isCrossOver;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Call your async function when the page loads
+
+    retrieveTimeEntry();
   }
 
   @override
@@ -103,22 +121,22 @@ class _CrossOverDayState extends State<CrossOverDay> {
               const SizedBox(height: 10),
               // Add space between input field and button
               ElevatedButton(
-                onPressed: () {
-                  if (formKey.currentState!.validate()) {
-                    formKey.currentState!.save();
-                    if (!isTimeEntryDone) {
-                      widget.onSubmit(
-                          true, TimeEntryTypeConstraints.crossOverDay);
-                      isTimeEntryDone = true;
-                      showSnackbar(
-                          context,
-                          'Rahul! Your Cross Over Day Updated Successfully',
-                          true);
-                    } else {
-                      showSnackbar(context, 'Already submitted entry!', false);
-                    }
-                  }
-                },
+                onPressed: isButtonEnabled
+                    ? () {
+                        if (formKey.currentState!.validate()) {
+                          formKey.currentState!.save();
+                          isButtonEnabled = false;
+                          TimeEntry.saveUserDetails(false);
+                          widget.onSubmit(
+                              true, TimeEntryTypeConstraints.crossOverDay);
+                          isTimeEntryDone = true;
+                          showSnackbar(
+                              context,
+                              'Rahul! Your Cross Over Day Updated Successfully',
+                              true);
+                        }
+                      }
+                    : null,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[

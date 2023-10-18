@@ -75,6 +75,22 @@ class MyDrawer extends StatelessWidget {
                 toggleDrawerContent(TimeEntryTypeConstraints.crossOverDay);
               },
             ),
+            ListTile(
+              leading: const Icon(
+                CupertinoIcons.time,
+                color: Colors.white,
+                size: 32,
+              ),
+              title: const Text(
+                'Last 7 days Attendance',
+                textScaleFactor: 1.2,
+                style: TextStyle(color: Colors.white),
+              ),
+              onTap: (){
+                Navigator.of(context).pop();
+                toggleDrawerContent(TimeEntryTypeConstraints.entryHistory);
+              },
+            ),
           ],
         ),
       ),

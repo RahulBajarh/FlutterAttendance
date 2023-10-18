@@ -16,9 +16,11 @@ class _TimeInState extends State<TimeIn> {
   bool isTimeEntryDone = false;
   final String userKey = 'RB1507';
   String message = "";
+  String informationText = "";
   String entryTimeIn = "";
   bool isButtonEnabled = true;
   bool isContainerVisible = false;
+  bool isCrossOverDay = false;
 
   void showSnackbar(BuildContext context, String newMessage, bool isSuccess) {
     setState(() {
@@ -33,7 +35,7 @@ class _TimeInState extends State<TimeIn> {
             fontSize: 18, // Change text size
           ),
         ),
-        duration: const Duration(seconds: 3),
+        duration: const Duration(seconds: 2),
         backgroundColor: isSuccess ? Colors.green : Colors.red,
         behavior: SnackBarBehavior.floating,
       ),
@@ -52,10 +54,19 @@ class _TimeInState extends State<TimeIn> {
         prefs.getBool(TimeEntryTypeConstraints.timeIn) ?? false;
     final entryTime =
         prefs.getString(TimeEntryTypeConstraints.entryTimeIn) ?? "";
+    final isCrossOver =
+        prefs.getBool(TimeEntryTypeConstraints.crossOverDay) ?? false;
     setState(() {
       isButtonEnabled = !isAlreadyTimein;
       isContainerVisible = isAlreadyTimein;
       entryTimeIn = entryTime;
+      informationText = "Your submitted time is: $entryTimeIn";
+      isCrossOverDay = isCrossOver;
+      if (isCrossOverDay) {
+        isButtonEnabled = false;
+        isContainerVisible = true;
+        informationText = "Please submit your cross over day entry first!";
+      }
     });
   }
 
@@ -117,7 +128,8 @@ class _TimeInState extends State<TimeIn> {
                               if (!isTimeEntryDone) {
                                 isButtonEnabled = false;
                                 TimeEntry.saveTimeEntry(
-                                    TimeEntryTypeConstraints.timeIn,TimeEntryTypeConstraints.entryTimeIn);
+                                    TimeEntryTypeConstraints.timeIn,
+                                    TimeEntryTypeConstraints.entryTimeIn);
                                 widget.onSubmit(
                                     true, TimeEntryTypeConstraints.timeIn);
                                 isTimeEntryDone = true;
@@ -161,18 +173,21 @@ class _TimeInState extends State<TimeIn> {
               visible: isContainerVisible,
               child: Container(
                 width: 300, // Set the width as needed
-                height: 50, // Set the height as needed
+                height: 70, // Set the height as needed
                 decoration: const BoxDecoration(
                   color: Colors.blue, // Container background color
                   borderRadius: BorderRadius.all(
                       Radius.circular(10)), // Set the border radius
                 ),
                 child: Center(
-                  child: Text(
-                    'Your submitted time is: $entryTimeIn',
-                    style: const TextStyle(
-                      color: Colors.white, // Text color
-                      fontSize: 18,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      informationText,
+                      style: const TextStyle(
+                        color: Colors.white, // Text color
+                        fontSize: 18,
+                      ),
                     ),
                   ),
                 ),
