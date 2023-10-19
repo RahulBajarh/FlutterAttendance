@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:contata_attendance/utils/common.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,6 +23,7 @@ class _TimeInState extends State<TimeIn> {
   bool isButtonEnabled = true;
   bool isContainerVisible = false;
   bool isCrossOverDay = false;
+  Timer? myTimer;
 
   void showSnackbar(BuildContext context, String newMessage, bool isSuccess) {
     setState(() {
@@ -48,7 +51,7 @@ class _TimeInState extends State<TimeIn> {
     super.dispose();
   }
 
-  Future<void> retrieveTimeEntry() async {
+  Future<void> retrieveUserData() async {
     final prefs = await SharedPreferences.getInstance();
     final isAlreadyTimein =
         prefs.getBool(TimeEntryTypeConstraints.timeIn) ?? false;
@@ -56,26 +59,28 @@ class _TimeInState extends State<TimeIn> {
         prefs.getString(TimeEntryTypeConstraints.entryTimeIn) ?? "";
     final isCrossOver =
         prefs.getBool(TimeEntryTypeConstraints.crossOverDay) ?? false;
-    setState(() {
-      isButtonEnabled = !isAlreadyTimein;
-      isContainerVisible = isAlreadyTimein;
-      entryTimeIn = entryTime;
-      informationText = "Your submitted time is: $entryTimeIn";
-      isCrossOverDay = isCrossOver;
-      if (isCrossOverDay) {
-        isButtonEnabled = false;
-        isContainerVisible = true;
-        informationText = "Please submit your cross over day entry first!";
-      }
-    });
+    if (mounted) {
+      setState(() {
+        isButtonEnabled = !isAlreadyTimein;
+        isContainerVisible = isAlreadyTimein;
+        entryTimeIn = entryTime;
+        informationText = "Your submitted time is: $entryTimeIn";
+        isCrossOverDay = isCrossOver;
+        if (isCrossOverDay) {
+          isButtonEnabled = false;
+          isContainerVisible = true;
+          informationText = "Please submit your cross over day entry first!";
+        }
+      });
+    }
   }
 
   @override
   void initState() {
     super.initState();
     // Call your async function when the page loads
-
-    retrieveTimeEntry();
+    //clearStoredDataNextDay();
+    retrieveUserData();
   }
 
   @override
@@ -131,23 +136,15 @@ class _TimeInState extends State<TimeIn> {
                         ? () {
                             if (formKey.currentState!.validate()) {
                               formKey.currentState!.save();
-                              if (!isTimeEntryDone) {
-                                isButtonEnabled = false;
-                                TimeEntry.saveTimeEntry(
-                                    TimeEntryTypeConstraints.timeIn,
-                                    TimeEntryTypeConstraints.entryTimeIn,
-                                    TimeEntryTypeConstraints.entryTimeInDate);
-                                widget.onSubmit(
-                                    true, TimeEntryTypeConstraints.timeIn);
-                                isTimeEntryDone = true;
-                                showSnackbar(
-                                    context,
-                                    'Rahul! Welcome to Contata Solutions',
-                                    true);
-                              } else {
-                                showSnackbar(
-                                    context, 'Already submitted entry!', false);
-                              }
+                              isButtonEnabled = false;
+                              TimeEntry.saveTimeEntry(
+                                  TimeEntryTypeConstraints.timeIn,
+                                  TimeEntryTypeConstraints.entryTimeIn,
+                                  TimeEntryTypeConstraints.entryTimeInDate);
+                              widget.onSubmit(
+                                  true, TimeEntryTypeConstraints.timeIn);
+                              showSnackbar(context,
+                                  'Rahul! Welcome to Contata Solutions', true);
                             }
                           }
                         : null,

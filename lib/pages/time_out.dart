@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:contata_attendance/utils/common.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,6 +23,7 @@ class _TimeOutState extends State<TimeOut> {
   bool isButtonEnabled = true;
   bool isContainerVisible = false;
   bool isCrossOverDay = false;
+  Timer? myTimer;
 
   void showSnackbar(BuildContext context, String newMessage, bool isSuccess) {
     setState(() {
@@ -48,7 +51,7 @@ class _TimeOutState extends State<TimeOut> {
     super.dispose();
   }
 
-  Future<void> retrieveTimeEntry() async {
+  Future<void> retrieveUserData() async {
     final prefs = await SharedPreferences.getInstance();
     final isAlreadyTimeOut =
         prefs.getBool(TimeEntryTypeConstraints.timeOut) ?? false;
@@ -56,26 +59,28 @@ class _TimeOutState extends State<TimeOut> {
         prefs.getString(TimeEntryTypeConstraints.entryTimeOut) ?? "";
     final isCrossOver =
         prefs.getBool(TimeEntryTypeConstraints.crossOverDay) ?? false;
-    setState(() {
-      isButtonEnabled = !isAlreadyTimeOut;
-      isContainerVisible = isAlreadyTimeOut;
-      entryTimeOut = entryTime;
-      informationText = "Your submitted time is: $entryTimeOut";
-      isCrossOverDay = isCrossOver;
-      if (isCrossOverDay) {
-        isButtonEnabled = false;
-        isContainerVisible = true;
-        informationText = "Please submit your cross over day entry first!";
-      }
-    });
+    if (mounted) {
+      setState(() {
+        isButtonEnabled = !isAlreadyTimeOut;
+        isContainerVisible = isAlreadyTimeOut;
+        entryTimeOut = entryTime;
+        informationText = "Your submitted time is: $entryTimeOut";
+        isCrossOverDay = isCrossOver;
+        if (isCrossOverDay) {
+          isButtonEnabled = false;
+          isContainerVisible = true;
+          informationText = "Please submit your cross over day entry first!";
+        }
+      });
+    }
   }
 
   @override
   void initState() {
     super.initState();
     // Call your async function when the page loads
-
-    retrieveTimeEntry();
+    //clearStoredDataNextDay();
+    retrieveUserData();
   }
 
   @override
@@ -132,23 +137,17 @@ class _TimeOutState extends State<TimeOut> {
                         ? () {
                             if (formKey.currentState!.validate()) {
                               formKey.currentState!.save();
-                              if (!isTimeEntryDone) {
-                                isButtonEnabled = false;
-                                TimeEntry.saveTimeEntry(
-                                    TimeEntryTypeConstraints.timeOut,
-                                    TimeEntryTypeConstraints.entryTimeOut,
-                                    TimeEntryTypeConstraints.entryTimeOutDate);
-                                widget.onSubmit(
-                                    true, TimeEntryTypeConstraints.timeOut);
-                                isTimeEntryDone = true;
-                                showSnackbar(
-                                    context,
-                                    'Rahul! Your Out Time Updated Successfully',
-                                    true);
-                              } else {
-                                showSnackbar(context,
-                                    'Already submitted entry!!', false);
-                              }
+                              isButtonEnabled = false;
+                              TimeEntry.saveTimeEntry(
+                                  TimeEntryTypeConstraints.timeOut,
+                                  TimeEntryTypeConstraints.entryTimeOut,
+                                  TimeEntryTypeConstraints.entryTimeOutDate);
+                              widget.onSubmit(
+                                  true, TimeEntryTypeConstraints.timeOut);
+                              showSnackbar(
+                                  context,
+                                  'Rahul! Your Out Time Updated Successfully',
+                                  true);
                             }
                           }
                         : null,

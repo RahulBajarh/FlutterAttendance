@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:contata_attendance/utils/common.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:contata_attendance/utils/routes.dart';
 import 'package:http/http.dart';
@@ -19,12 +21,13 @@ class _LoginPageState extends State<LoginPage> {
   String password = '';
   bool isLoggedIn = false;
 
-  // void login() {
-  //   isLoggedIn = true;
-  //   if (isLoggedIn) {
-  //     Navigator.pushNamed(context, MyRoutes.homeRoute);
-  //   }
-  // }
+  Future<void> handleLogin(String username, String password) async {
+    isLoggedIn = true;
+    saveCredentials(username);
+    if (isLoggedIn) {
+      Navigator.pushNamed(context, MyRoutes.homeRoute);
+    }
+  }
 
   Future<void> saveCredentials(String username) async {
     final prefs = await SharedPreferences.getInstance();
@@ -32,24 +35,45 @@ class _LoginPageState extends State<LoginPage> {
     await prefs.setBool(LoginKeys.keylogin, true);
   }
 
-  Future<void> handleLogin(String username, String password) async {
+  Future<void> testLogin(String username, String password) async {
     try {
       Response response = await get(
-        Uri.parse('https://jsonplaceholder.typicode.com/users?username=$username'),
+        Uri.parse(
+            'https://jsonplaceholder.typicode.com/users?username=$username'),
       );
       if (response.statusCode == 200) {
-        //final doc = response.body.toString();
-        //final userJSON = jsonDecode(doc);
-        saveCredentials(username);
-        //var userEmail = userJSON[0]['email'];
-
-        if (!context.mounted) {
-          return;
+        final doc = response.body.toString();
+        final userJSON = jsonDecode(doc);
+        var userEmail = userJSON[0]['email'];
+        if (userEmail != "") {
+          saveCredentials(username);
+          if (!context.mounted) {
+            return;
+          }
+          Navigator.pushNamed(context, MyRoutes.homeRoute);
+        } else {
+          showSnackbar();
         }
-        Navigator.pushNamed(context, MyRoutes.homeRoute);
+      } else {
+        showSnackbar();
       }
     } catch (e) {
       showSnackbar();
+    }
+  }
+
+  Future<List<Map<String, dynamic>>?> fetchUsers() async {
+    Response response = await get(
+      Uri.parse('https://jsonplaceholder.typicode.com/users'),
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.cast<Map<String, dynamic>>();
+    } else {
+      //throw Exception('Failed to load posts');
+      showSnackbar();
+      return null;
     }
   }
 
@@ -149,10 +173,10 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 10),
                     ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         if (_formKey.currentState!.validate()) {
                           _formKey.currentState!.save();
-                          handleLogin(username, password);
+                          await handleLogin(username, password);
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -170,6 +194,17 @@ class _LoginPageState extends State<LoginPage> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () async {
+                        List<Map<String, dynamic>>? posts = await fetchUsers();
+                        // Handle the fetched posts
+                        if (kDebugMode) {
+                          print(posts);
+                        }
+                      },
+                      child: const Text('Fetch Users'),
                     ),
                   ],
                 ),

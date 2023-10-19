@@ -42,6 +42,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isCrossOverDay = false;
   bool isTimeEntryHistory = false;
   String entryTimeType = "";
+  Timer? myTimer;
 
   //Color _backgroundColor = Colors.red;
 
@@ -150,39 +151,31 @@ class _MyHomePageState extends State<MyHomePage> {
     TimeEntry.saveUserDetails(false);
   }
 
-  Future<void> clearStoredDateTomorrow() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    DateTime currentDate = DateTime.now();
-    DateTime nextDay = currentDate.add(const Duration(days: 1));
-
-    // Calculate the time until the next day arrives
-    Duration timeUntilNextDay = nextDay.difference(currentDate);
-
-    Timer(timeUntilNextDay, () {
-      // Clear the stored date when the next day arrives
-      prefs.remove(TimeEntryTypeConstraints.timeIn);
-      prefs.remove(TimeEntryTypeConstraints.entryTimeIn);
-      prefs.remove(TimeEntryTypeConstraints.entryTimeInDate);
-      prefs.remove(TimeEntryTypeConstraints.timeOut);
-      prefs.remove(TimeEntryTypeConstraints.entryTimeOut);
-      prefs.remove(TimeEntryTypeConstraints.entryTimeOutDate);
-      prefs.remove(TimeEntryTypeConstraints.crossOverDay);
+  void currentTimeDisplay() {
+    myTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() {
+          currentTime = DateFormat('hh:mm:ss a').format(DateTime.now());
+        });
+      }
     });
   }
 
 // Retrieve user data
-  Future<void> retrieveCredentials() async {
+  Future<void> retrieveUserData() async {
     final prefs = await SharedPreferences.getInstance();
     final savedUsername = prefs.getString('username') ?? '';
     final isCrossOver =
         prefs.getBool(TimeEntryTypeConstraints.crossOverDay) ?? false;
-    setState(() {
-      user = savedUsername;
-      isCrossOverDay = isCrossOver;
-      if (isCrossOverDay) {
-        _selectedIndex = 2;
-      }
-    });
+    if (mounted) {
+      setState(() {
+        user = savedUsername;
+        isCrossOverDay = isCrossOver;
+        if (isCrossOverDay) {
+          _selectedIndex = 2;
+        }
+      });
+    }
   }
 
   void _logOut() async {
@@ -190,6 +183,9 @@ class _MyHomePageState extends State<MyHomePage> {
     prefs.remove(LoginKeys.username);
     prefs.remove(LoginKeys.keylogin);
     prefs.clear();
+    if (myTimer != null) {
+      myTimer!.cancel();
+    }
     if (!mounted) return;
     Navigator.pushReplacement(
         context,
@@ -205,18 +201,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) {
-        setState(() {
-          currentTime = DateFormat('hh:mm:ss a').format(DateTime.now());
-        });
-      }
-    });
+    currentTimeDisplay();
     super.initState();
-    clearStoredDateTomorrow();
     // Call your async function when the page loads
     userDetails();
-    retrieveCredentials();
+    //clearStoredDataNextDay();
+    retrieveUserData();
   }
 
   @override
@@ -247,135 +237,128 @@ class _MyHomePageState extends State<MyHomePage> {
         drawer: MyDrawer(
           toggleDrawerContent: toggleDrawerContent,
         ),
-        body: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          child: Column(children: [
-            Container(
-              height: 50,
-              decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.4),
+        body: GestureDetector(
+          onTap: () {
+            // User interaction
+            print("user GestureDetector");
+          },
+          child: SingleChildScrollView(
+            child: Column(children: [
+              Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.4),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    const Padding(
+                      padding: EdgeInsets.only(left: 10),
+                      child: Text(
+                        'Attendance System',
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: Image.asset('assets/images/contata.png',
+                          height: 150, width: 150),
+                    ),
+                  ],
+                ),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  const Padding(
-                    padding: EdgeInsets.only(left: 10),
-                    child: Text(
-                      'Attendance System',
-                      textAlign: TextAlign.left,
+              const SizedBox(height: 1),
+              Container(
+                height: 2,
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                ),
+              ),
+              const SizedBox(height: 1),
+              Container(
+                height: 30,
+                decoration: BoxDecoration(
+                  color: Colors.lightBlue[700],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10),
+                      child: Text(
+                        currentDate,
+                        textAlign: TextAlign.left,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: Text(
+                        currentTime,
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      'Welcome To Contata Solutions',
                       style: TextStyle(
-                        color: Colors.black,
+                        color: Colors.indigo[900],
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: Image.asset('assets/images/contata.png',
-                        height: 150, width: 150),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 1),
-            Container(
-              height: 2,
-              decoration: const BoxDecoration(
-                color: Colors.red,
-              ),
-            ),
-            const SizedBox(height: 1),
-            Container(
-              height: 30,
-              decoration: BoxDecoration(
-                color: Colors.lightBlue[700],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(left: 10),
-                    child: Text(
-                      currentDate,
-                      textAlign: TextAlign.left,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: Text(
-                      currentTime,
-                      textAlign: TextAlign.right,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(
-                    'Welcome To Contata Solutions',
-                    style: TextStyle(
-                      color: Colors.indigo[900],
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 40),
+              const SizedBox(height: 40),
 
-            Visibility(
-              visible: isTimeEntryHistory,
-              child: Container(
-                key: ValueKey<int>(0),
+              Visibility(
+                visible: isTimeEntryHistory,
                 child: const TimeEntryHistory(),
-              ),
-            ), //Time History
-            Visibility(
-              visible: isCrossOverDay,
-              child: Container(
-                key: ValueKey<int>(1),
+              ), //Time History
+              Visibility(
+                visible: isCrossOverDay,
                 child: CrossOverDay(
                   onSubmit: isSuccess,
                 ),
-              ),
-            ), //Cross Over Day
-            Visibility(
-              visible: isTimeIn,
-              child: Container(
-                key: ValueKey<int>(2),
+              ), //Cross Over Day
+              Visibility(
+                visible: isTimeIn,
                 child: TimeIn(
                   onSubmit: isSuccess,
                 ),
-              ),
-            ), //Time in
-            Visibility(
-              visible: isTimeOut,
-              child: Container(
-                key: ValueKey<int>(3),
+              ), //Time in
+              Visibility(
+                visible: isTimeOut,
                 child: TimeOut(
                   onSubmit: isSuccess,
                 ),
-              ),
-            ), //Time out
+              ), //Time out
 
-            const SizedBox(height: 10),
-          ]),
+              const SizedBox(height: 10),
+            ]),
+          ),
         ),
         bottomNavigationBar: SizedBox(
           height: 70.0,

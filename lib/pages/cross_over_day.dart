@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:contata_attendance/utils/common.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,6 +20,7 @@ class _CrossOverDayState extends State<CrossOverDay> {
   String message = "";
   bool isButtonEnabled = false;
   bool isContainerVisible = false;
+  Timer? myTimer;
 
   void showSnackbar(BuildContext context, String newMessage, bool isSuccess) {
     setState(() {
@@ -48,9 +51,10 @@ class _CrossOverDayState extends State<CrossOverDay> {
   void dispose() {
     // Dispose of the TextEditingController when the widget is removed
     super.dispose();
+    //clearStoredDataNextDay();
   }
 
-  Future<void> retrieveTimeEntry() async {
+  Future<void> retrieveUserData() async {
     final prefs = await SharedPreferences.getInstance();
     final isCrossOver =
         prefs.getBool(TimeEntryTypeConstraints.crossOverDay) ?? false;
@@ -64,7 +68,7 @@ class _CrossOverDayState extends State<CrossOverDay> {
     super.initState();
     // Call your async function when the page loads
 
-    retrieveTimeEntry();
+    retrieveUserData();
   }
 
   @override
